@@ -18,7 +18,7 @@ from django.urls import path
 from car import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', include('your_app.urls')),
     path('move_forward/', views.move_forward, name='move_forward'),
     path('move_backward/', views.move_backward, name='move_backward'),
     path('turn_left/', views.turn_left, name='turn_left'),

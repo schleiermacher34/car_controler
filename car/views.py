@@ -6,34 +6,35 @@ from django.shortcuts import render
 ESP32_IP = 'http://192.168.1.100'  # Example IP (use your ESP32 IP)
 ESP32_CONTROL_PATH = '/control'    # Assume the endpoint on the ESP32
 
-# Function to send command to the ESP32
-def send_car_command(command):
-    try:
-        response = requests.post(f'{ESP32_IP}{ESP32_CONTROL_PATH}', data={'command': command})
-        return response.json()  # ESP32 returns status in JSON
-    except requests.exceptions.RequestException as e:
-        return {"status": "error", "message": str(e)}
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Command
+from .serializers import CommandSerializer
+from django.shortcuts import render, redirect
 
-# Views for car control actions
-def move_forward(request):
-    result = send_car_command('move_forward')
-    return JsonResponse(result)
+@api_view(['GET'])
+def get_command(request):
+    command = Command.objects.filter(executed=False).order_by('-timestamp').first()
+    if command:
+        serializer = CommandSerializer(command)
+        # Mark command as executed
+        command.executed = True
+        command.save()
+        return Response(serializer.data)
+    else:
+        return Response({'command': 'none'})
 
-def move_backward(request):
-    result = send_car_command('move_backward')
-    return JsonResponse(result)
 
-def turn_left(request):
-    result = send_car_command('turn_left')
-    return JsonResponse(result)
 
-def turn_right(request):
-    result = send_car_command('turn_right')
-    return JsonResponse(result)
 
-def stop_car(request):
-    result = send_car_command('stop')
-    return JsonResponse(result)
+
+def send_command(request):
+    if request.method == 'POST':
+        command = request.POST.get('command')
+        Command.objects.create(command=command)
+        return redirect('send_command')
+    return render(request, 'send_command.html')
+
 
 # Index page for control panel
 def index(request):

@@ -1,0 +1,15 @@
+<!-- templates/send_command.html -->
+<form method="POST">
+    {% csrf_token %}
+    <select name="command">
+        <option value="auto">Auto</option>
+        <option value="manual">Manual</option>
+        <option value="forward">Forward</option>
+        <option value="backward">Backward</option>
+        <option value="left">Left</option>
+        <option value="right">Right</option>
+        <option value="stop">Stop</option>
+    </select>
+    <button type="submit">Send Command</button>
+</form>
+
